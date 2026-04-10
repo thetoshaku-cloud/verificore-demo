@@ -1,1 +1,10 @@
-
+{
+  "version": 2,
+  "name": "verificore-sa",
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/auth/(.*)", "dest": "/auth/index.html" },
+    { "src": "/fsp/(.*)", "dest": "/fsp/index.html" },
+    { "src": "/", "dest": "/fsp/index.html" }
+  ]
+}
