@@ -1,1 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>VerifiCore — FSP Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;1,300;1,500&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#111110;--ink2:#3d3d3a;--ink3:#78786f;--ink4:#b5b5ac;
+  --paper:#f5f4f0;--card:#fff;--card2:#f0efe8;--card3:#e8e6dc;
+  --green:#155e3e;--gm:#1f8a5a;--gl:#e6f4ed;--gd:#0c3d28;
+  --red:#7a1f1f;--rl:#fdf0f0;--amber:#6b4009;--al:#fdf5e6;--blue:#1a3566;--bl:#eef3fc;
+  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.13);
+  --sh:0 1px 3px rgba(0,0,0,0.05),0 4px 14px rgba(0,0,0,0.04);
+  --shlg:0 4px 12px rgba(0,0,0,0.07),0 20px 56px rgba(0,0,0,0.08);
+  --r:8px;--rl2:14px;--rxl:20px;
+  --f:'Geist',sans-serif;--fd:'Fraunces',serif;--fm:'Geist Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:13px}
+body{background:var(--paper);color:var(--ink);font-family:var(--f);min-height:100vh}
+.layout{display:grid;grid-template-columns:210px 1fr;min-height:100vh}
 
+/* SIDEBAR */
+.sb{background:var(--ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden}
+.sb-brand{padding:22px 18px 18px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+.sb-logo{display:flex;align-items:center;gap:9px}
+.sb-mark{width:28px;height:28px;background:var(--gm);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-style:italic;font-size:13px;color:#fff;flex-shrink:0}
+.sb-name{font-family:var(--fd);font-style:italic;font-size:17px;color:#fff}
+.sb-org{font-size:10px;color:rgba(255,255,255,0.3);font-family:var(--fm);margin-top:5px}
+.sb-nav{padding:14px 10px;flex:1;overflow-y:auto}
+.sb-sec{font-size:9px;font-family:var(--fm);color:rgba(255,255,255,0.2);letter-spacing:1.5px;text-transform:uppercase;padding:0 8px;margin:14px 0 5px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r);color:rgba(255,255,255,0.45);font-size:12px;cursor:pointer;transition:all .12s;margin-bottom:1px;user-select:none}
+.sb-item:hover{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.8)}
+.sb-item.on{background:rgba(255,255,255,0.1);color:#fff;font-weight:500}
+.sb-pip{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.5;flex-shrink:0}
+.sb-item.on .sb-pip{background:var(--gm);opacity:1}
+.sb-badge{margin-left:auto;background:var(--gm);color:#fff;font-size:9px;font-family:var(--fm);padding:1px 6px;border-radius:10px}
+.sb-foot{padding:14px 10px;border-top:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+.sb-user{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:var(--r);cursor:pointer}
+.sb-user:hover{background:rgba(255,255,255,0.05)}
+.sb-av{width:26px;height:26px;border-radius:50%;background:var(--gm);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;flex-shrink:0}
+.sb-uname{font-size:11px;color:rgba(255,255,255,0.65);font-weight:500}
+.sb-urole{font-size:9px;color:rgba(255,255,255,0.25);font-family:var(--fm)}
+
+/* MAIN */
+.main{display:flex;flex-direction:column;min-height:100vh;overflow-y:auto}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0 28px;height:54px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:40;flex-shrink:0}
+.tb-title{font-family:var(--fd);font-style:italic;font-size:18px;color:var(--ink)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.live-pill{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--fm);color:var(--gm);background:var(--gl);border:1px solid rgba(31,138,90,0.2);padding:4px 10px;border-radius:20px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--gm);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* PAGES */
+.page{display:none;padding:24px 28px;flex:1;animation:fadein .2s ease}
+.page.on{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--rl2);padding:16px 18px;box-shadow:var(--sh)}
+.kl{font-size:9px;font-family:var(--fm);color:var(--ink3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+.kv{font-family:var(--fd);font-style:italic;font-size:26px;line-height:1;margin-bottom:3px;color:var(--ink)}
+.kv.g{color:var(--green)}.kv.r{color:var(--red)}.kv.a{color:var(--amber)}
+.kd{font-size:10px;color:var(--ink3)}
+
+/* TABLE */
+.sec-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sec-title{font-family:var(--fd);font-style:italic;font-size:15px;color:var(--ink)}
+.ftabs{display:flex;gap:3px}
+.ftab{padding:4px 11px;border-radius:20px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .12s;color:var(--ink3);font-family:var(--fm)}
+.ftab:hover{background:var(--card2)}.ftab.on{background:var(--ink);color:#fff}
+.tw{background:var(--card);border:1px solid var(--border);border-radius:var(--rl2);overflow:hidden;box-shadow:var(--sh)}
+.vt{width:100%;border-collapse:collapse}
+.vt thead tr{background:var(--card2)}
+.vt th{text-align:left;padding:9px 14px;font-size:9px;font-family:var(--fm);text-transform:uppercase;letter-spacing:.9px;color:var(--ink3);border-bottom:1px solid var(--border);font-weight:500}
+.vt td{padding:13px 14px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--ink)}
+.vt tr:last-child td{border-bottom:none}
+.vt tbody tr{cursor:pointer;transition:background .1s}
+.vt tbody tr:hover td{background:var(--paper)}
+.vt tbody tr.sel td{background:#f0f8f4}
+.ai{display:flex;align-items:center;gap:9px}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0}
+.an{font-size:12px;font-weight:500;color:var(--ink)}.aid{font-size:9px;color:var(--ink3);font-family:var(--fm);margin-top:1px}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:500;font-family:var(--fm)}
+.pill::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.7}
+.pp{background:var(--al);color:var(--amber)}
+.pv{background:var(--gl);color:var(--green)}
+.pf{background:var(--rl);color:var(--red)}
+.pw{background:var(--bl);color:var(--blue)}
+/* score chips — 3 variants */
+.sc{display:inline-block;padding:2px 9px;border-radius:20px;font-family:var(--fd);font-style:italic;font-size:13px}
+.sc-l{background:var(--gl);color:var(--green)}
+.sc-m{background:var(--al);color:var(--amber)}
+.sc-h{background:var(--rl);color:var(--red)}
+.mono{font-family:var(--fm);font-size:11px;color:var(--ink2)}
+
+/* PLACEHOLDER PAGES */
+.page-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px;text-align:center;color:var(--ink3)}
+.ph-title{font-family:var(--fd);font-style:italic;font-size:22px;color:var(--ink2);margin-bottom:8px}
+.ph-sub{font-size:13px;line-height:1.6;max-width:360px}
+
+/* DRAWER */
+.dov{position:fixed;inset:0;background:rgba(10,10,8,.2);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+.dov.on{opacity:1;pointer-events:all}
+.drawer{position:fixed;right:0;top:0;bottom:0;width:440px;background:var(--card);border-left:1px solid var(--border);box-shadow:var(--shlg);z-index:51;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden}
+.drawer.on{transform:translateX(0)}
+.dh{padding:16px 20px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:10px}
+.dc{width:26px;height:26px;background:var(--card2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--ink3);cursor:pointer;flex-shrink:0;margin-left:auto}
+.dc:hover{background:var(--card3)}
+.db{padding:18px 22px;overflow-y:auto;flex:1}
+.da{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;background:var(--card)}
+
+/* DRAWER CONTENT */
+.sd{background:var(--card2);border-radius:var(--rl2);padding:18px;display:flex;align-items:center;gap:16px;margin-bottom:16px;border:1px solid var(--border)}
+.snb{font-family:var(--fd);font-style:italic;font-size:52px;line-height:1}
+.snb.l{color:var(--green)}.snb.m{color:var(--amber)}.snb.h{color:var(--red)}
+.srl{font-family:var(--fm);font-size:9px;letter-spacing:.9px;text-transform:uppercase;margin-bottom:3px}
+.srl.l{color:var(--green)}.srl.m{color:var(--amber)}.srl.h{color:var(--red)}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}
+.mc{background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px}
+.mlb{font-size:9px;font-family:var(--fm);color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+.mv{font-family:var(--fd);font-style:italic;font-size:17px;color:var(--ink)}
+.mv.g{color:var(--green)}.mv.r{color:var(--red)}
+.dsl{font-family:var(--fm);font-size:9px;text-transform:uppercase;letter-spacing:.9px;color:var(--ink3);margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.dsl::after{content:'';flex:1;height:1px;background:var(--border)}
+.ebr{display:flex;align-items:center;gap:9px;margin-bottom:9px;font-size:11px;color:var(--ink2)}
+.ebl{width:80px;color:var(--ink2);flex-shrink:0}
+.ebt{flex:1;height:3px;background:var(--card3);border-radius:2px;overflow:hidden}
+.ebf{height:100%;border-radius:2px;background:var(--gm);transition:width .7s ease}
+.eba{width:66px;text-align:right;font-family:var(--fm);font-size:10px;color:var(--ink3);flex-shrink:0}
+.fr{display:flex;gap:8px;padding:9px 11px;border-radius:var(--r);margin-bottom:7px;font-size:11px;border-left:3px solid transparent}
+.fr.ok{background:var(--gl);border-left-color:var(--gm)}
+.fr.warn{background:var(--al);border-left-color:#d4870a}
+.fr.bad{background:var(--rl);border-left-color:#c43232}
+.fri{font-size:12px;flex-shrink:0;margin-top:1px}
+.frt{font-weight:600;margin-bottom:1px;color:var(--ink)}
+.frd{color:var(--ink3);font-size:10px}
+.audit{background:var(--ink);border-radius:var(--r);padding:12px 14px;font-family:var(--fm);font-size:10px;color:rgba(255,255,255,.4);line-height:1.9;margin-bottom:16px}
+.aline{display:flex;gap:11px}
+.at{color:var(--gm);flex-shrink:0}
+.ae{color:rgba(255,255,255,.65)}
+
+/* MODALS */
+.ov{position:fixed;inset:0;background:rgba(10,10,8,.38);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(3px)}
+.ov.on{opacity:1;pointer-events:all}
+.modal{background:var(--card);border-radius:var(--rxl);box-shadow:var(--shlg);width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;transform:scale(.97) translateY(6px);transition:transform .2s cubic-bezier(.4,0,.2,1)}
+.ov.on .modal{transform:scale(1) translateY(0)}
+.mh{padding:24px 26px 0}
+.mt{font-family:var(--fd);font-style:italic;font-size:21px;margin-bottom:3px;color:var(--ink)}
+.ms{font-size:12px;color:var(--ink3);margin-bottom:20px}
+.mb{padding:0 26px}
+.mf{padding:18px 26px 22px;display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border);margin-top:18px}
+.fg{margin-bottom:12px}
+.fl{display:block;font-size:10px;font-weight:500;color:var(--ink2);margin-bottom:4px;font-family:var(--fm)}
+.fi{width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:var(--r);font-family:var(--f);font-size:13px;color:var(--ink);background:var(--card);outline:none;transition:border .12s;-webkit-appearance:none}
+.fi:focus{border-color:var(--gm);box-shadow:0 0 0 3px rgba(31,138,90,.1)}
+.fr2,.fg2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.info-box{border-radius:var(--r);padding:11px 13px;font-size:11px;display:flex;gap:8px;margin-bottom:12px;line-height:1.55}
+.info-green{background:var(--gl);border:1px solid rgba(31,138,90,.18);color:var(--green)}
+.info-blue{background:var(--bl);border:1px solid rgba(26,53,102,.15);color:var(--blue)}
+
+/* STITCH LINK MODAL */
+.sl-modal{background:var(--card);border-radius:var(--rxl);box-shadow:var(--shlg);width:440px;max-width:95vw;max-height:90vh;overflow-y:auto;transform:scale(.97) translateY(6px);transition:transform .2s cubic-bezier(.4,0,.2,1)}
+.ov.on .sl-modal{transform:scale(1) translateY(0)}
+.sl-header{background:var(--gd);padding:18px 22px;display:flex;align-items:center;gap:10px}
+.sl-logo{display:flex;align-items:center;gap:7px}
+.sl-mark{width:24px;height:24px;background:var(--gm);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-style:italic;font-size:12px;color:#fff}
+.sl-name{font-family:var(--fd);font-style:italic;font-size:15px;color:#fff}
+.sl-badge{margin-left:auto;font-size:9px;font-family:var(--fm);color:rgba(255,255,255,.5);background:rgba(255,255,255,.1);padding:3px 8px;border-radius:10px}
+.sl-body{padding:18px 22px}
+.sl-title{font-family:var(--fd);font-style:italic;font-size:18px;margin-bottom:4px;color:var(--ink)}
+.sl-sub{font-size:11px;color:var(--ink3);margin-bottom:14px;line-height:1.55}
+.sl-step{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}
+.sl-step:last-of-type{border-bottom:none}
+.sl-step-num{width:20px;height:20px;border-radius:50%;background:var(--card2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;font-family:var(--fm);flex-shrink:0;margin-top:1px;transition:all .3s;color:var(--ink3)}
+.sl-step-num.done{background:var(--gm);color:#fff;border-color:var(--gm)}
+.sl-step-num.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.sl-step-text b{display:block;font-weight:500;margin-bottom:1px;color:var(--ink)}
+.sl-step-text small{color:var(--ink3);font-family:var(--fm);font-size:10px}
+.sl-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px}
+.url-box{background:var(--card2);border:1px solid var(--border2);border-radius:var(--r);padding:8px 12px;font-family:var(--fm);font-size:9px;color:var(--ink3);word-break:break-all;margin:10px 0;line-height:1.8}
+.url-box .hl{color:var(--gm)}
+.copy-btn{font-size:9px;color:var(--gm);cursor:pointer;font-family:var(--fm);text-decoration:underline;margin-top:4px;display:inline-block}
+.copy-btn:hover{color:var(--green)}
+
+/* TOAST */
+.toast-area{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:300;pointer-events:none}
+.toast{background:var(--ink);color:#fff;padding:9px 16px;border-radius:20px;font-size:11px;font-family:var(--fm);box-shadow:var(--sh);opacity:0;transform:translateY(6px);transition:all .18s;white-space:nowrap}
+.toast.on{opacity:1;transform:translateY(0)}
+@keyframes flash{0%{background:rgba(31,138,90,.16)}100%{background:transparent}}
+.row-new td{animation:flash 2.5s ease forwards}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 15px;border-radius:var(--r);font-family:var(--f);font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all .12s;text-decoration:none;white-space:nowrap}
+.bp{background:var(--ink);color:#fff}.bp:hover{background:var(--ink2)}
+.bg{background:var(--green);color:#fff}.bg:hover{background:var(--gd)}
+.bs{background:transparent;color:var(--ink2);border:1px solid var(--border2)}.bs:hover{background:var(--card2)}
+.bd{background:transparent;color:var(--red);border:1px solid rgba(122,31,31,.18)}.bd:hover{background:var(--rl)}
+.bsm{padding:6px 11px;font-size:11px}
+
+/* ══ PRINT / PDF STYLES ══════════════════════════════════════════════════════ */
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background: #fff !important; color: #111 !important; font-family: 'Geist', 'Segoe UI', sans-serif !important; font-size: 11pt !important; }
+  .layout { display: block !important; }
+  .sb, .topbar, .dov, .drawer, .ov, .toast-area, .ftabs, .sec-bar .btn { display: none !important; }
+  .main { display: block !important; min-height: unset !important; }
+  .body { padding: 0 !important; }
+  .kpis { display: none !important; }
+  .sec-bar { margin-bottom: 0 !important; }
+  .sec-bar .sec-title { display: none !important; }
+  .page { display: none !important; padding: 0 !important; }
+  .tw { display: none !important; }
+
+  /* PDF report container */
+  #pdf-report { display: block !important; }
+
+  /* Page setup */
+  @page {
+    size: A4;
+    margin: 18mm 16mm 16mm 16mm;
+  }
+  @page :first {
+    margin-top: 12mm;
+  }
+}
+
+/* PDF report — hidden on screen, visible on print */
+#pdf-report {
+  display: none;
+  font-family: 'Geist', 'Segoe UI', sans-serif;
+  color: #111;
+  font-size: 11pt;
+  line-height: 1.5;
+}
+.pdf-page-break { page-break-before: always; }
+
+/* PDF layout pieces */
+.pdf-header { display: flex; align-items: flex-start; justify-content: space-between; padding-bottom: 14pt; border-bottom: 2pt solid #1f8a5a; margin-bottom: 18pt; }
+.pdf-logo { display: flex; align-items: center; gap: 8pt; }
+.pdf-logo-mark { width: 28pt; height: 28pt; background: #1f8a5a; border-radius: 6pt; display: flex; align-items: center; justify-content: center; font-size: 13pt; font-style: italic; color: #fff; font-family: Georgia, serif; }
+.pdf-logo-name { font-size: 17pt; font-style: italic; color: #111; font-family: Georgia, serif; }
+.pdf-header-right { text-align: right; }
+.pdf-header-right .pdf-report-title { font-size: 12pt; font-weight: 600; color: #155e3e; margin-bottom: 2pt; }
+.pdf-header-right .pdf-report-meta { font-size: 8pt; color: #78786f; font-family: 'Courier New', monospace; }
+
+.pdf-section-title { font-size: 9pt; font-family: 'Courier New', monospace; text-transform: uppercase; letter-spacing: 1pt; color: #78786f; margin: 16pt 0 8pt; padding-bottom: 4pt; border-bottom: 0.5pt solid #e8e6dc; display: flex; align-items: center; gap: 6pt; }
+
+.pdf-score-band { background: #e6f4ed; border: 1pt solid #1f8a5a; border-radius: 6pt; padding: 14pt 18pt; display: flex; align-items: center; gap: 18pt; margin-bottom: 16pt; page-break-inside: avoid; }
+.pdf-score-band.high { background: #fdf0f0; border-color: #c43232; }
+.pdf-score-band.med { background: #fdf5e6; border-color: #d4870a; }
+.pdf-score-num { font-family: Georgia, serif; font-style: italic; font-size: 44pt; line-height: 1; color: #155e3e; }
+.pdf-score-num.high { color: #7a1f1f; }
+.pdf-score-num.med { color: #6b4009; }
+.pdf-score-meta { flex: 1; }
+.pdf-score-risk { font-size: 11pt; font-weight: 600; color: #155e3e; margin-bottom: 3pt; }
+.pdf-score-risk.high { color: #7a1f1f; }
+.pdf-score-risk.med { color: #6b4009; }
+.pdf-score-sub { font-size: 8.5pt; color: #78786f; }
+
+.pdf-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8pt; margin-bottom: 14pt; }
+.pdf-metric { background: #f0efe8; border-radius: 5pt; padding: 10pt 12pt; page-break-inside: avoid; }
+.pdf-metric-label { font-size: 7.5pt; font-family: 'Courier New', monospace; text-transform: uppercase; letter-spacing: 0.6pt; color: #78786f; margin-bottom: 4pt; }
+.pdf-metric-value { font-family: Georgia, serif; font-style: italic; font-size: 15pt; color: #111; }
+.pdf-metric-value.green { color: #155e3e; }
+.pdf-metric-value.red { color: #7a1f1f; }
+
+.pdf-applicant-card { background: #f0efe8; border-radius: 6pt; padding: 12pt 14pt; display: flex; align-items: flex-start; gap: 12pt; margin-bottom: 14pt; page-break-inside: avoid; }
+.pdf-av { width: 32pt; height: 32pt; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12pt; font-weight: 600; color: #fff; flex-shrink: 0; }
+.pdf-app-name { font-size: 13pt; font-weight: 600; color: #111; margin-bottom: 2pt; }
+.pdf-app-meta { font-size: 8pt; font-family: 'Courier New', monospace; color: #78786f; }
+.pdf-issued-by { margin-left: auto; text-align: right; font-size: 8pt; color: #78786f; font-family: 'Courier New', monospace; }
+
+.pdf-table { width: 100%; border-collapse: collapse; font-size: 9pt; margin-bottom: 14pt; page-break-inside: avoid; }
+.pdf-table th { background: #e8e6dc; text-align: left; padding: 6pt 8pt; font-size: 7.5pt; font-family: 'Courier New', monospace; text-transform: uppercase; letter-spacing: 0.5pt; color: #78786f; border-bottom: 1pt solid #b5b5ac; }
+.pdf-table td { padding: 7pt 8pt; border-bottom: 0.5pt solid #e8e6dc; color: #111; }
+.pdf-table tr:last-child td { border-bottom: none; }
+.pdf-table td.mono { font-family: 'Courier New', monospace; font-size: 8.5pt; }
+.pdf-table td.green { color: #155e3e; }
+.pdf-table td.red { color: #7a1f1f; }
+
+.pdf-flag { display: flex; gap: 8pt; padding: 8pt 10pt; border-radius: 4pt; margin-bottom: 6pt; font-size: 9pt; page-break-inside: avoid; border-left: 3pt solid transparent; }
+.pdf-flag.ok { background: #e6f4ed; border-left-color: #1f8a5a; }
+.pdf-flag.warn { background: #fdf5e6; border-left-color: #d4870a; }
+.pdf-flag.bad { background: #fdf0f0; border-left-color: #c43232; }
+.pdf-flag-ico { flex-shrink: 0; font-size: 10pt; width: 14pt; text-align: center; }
+.pdf-flag-title { font-weight: 600; margin-bottom: 1pt; }
+.pdf-flag-desc { color: #78786f; font-size: 8.5pt; }
+
+.pdf-audit { background: #111; border-radius: 5pt; padding: 10pt 12pt; page-break-inside: avoid; }
+.pdf-audit-line { display: flex; gap: 10pt; font-family: 'Courier New', monospace; font-size: 8pt; margin-bottom: 3pt; color: rgba(255,255,255,0.45); }
+.pdf-audit-time { color: #1f8a5a; flex-shrink: 0; }
+.pdf-audit-event { color: rgba(255,255,255,0.7); }
+
+.pdf-expense-row { display: flex; align-items: center; gap: 8pt; margin-bottom: 7pt; font-size: 9pt; }
+.pdf-exp-label { width: 72pt; color: #3d3d3a; flex-shrink: 0; }
+.pdf-exp-track { flex: 1; height: 5pt; background: #e8e6dc; border-radius: 2pt; overflow: hidden; }
+.pdf-exp-fill { height: 100%; border-radius: 2pt; background: #1f8a5a; }
+.pdf-exp-amount { width: 60pt; text-align: right; font-family: 'Courier New', monospace; font-size: 8.5pt; color: #78786f; flex-shrink: 0; }
+
+.pdf-footer { margin-top: 18pt; padding-top: 10pt; border-top: 0.5pt solid #e8e6dc; display: flex; justify-content: space-between; font-size: 7.5pt; font-family: 'Courier New', monospace; color: #b5b5ac; }
+.pdf-disclaimer { font-size: 7.5pt; color: #b5b5ac; font-family: 'Courier New', monospace; line-height: 1.5; margin-top: 8pt; }
+
+</style>
+<base target="_blank">
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="sb-brand">
+    <div class="sb-logo"><div class="sb-mark">Vc</div><div class="sb-name">VerifiCore</div></div>
+    <div class="sb-org">Acme Micro Lenders</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">Main</div>
+    <div class="sb-item on" onclick="showPage('verifications',this)"><div class="sb-pip"></div>Verifications<span class="sb-badge" id="sb-count">4</span></div>
+    <div class="sb-item" onclick="showPage('reports',this)"><div class="sb-pip"></div>Reports</div>
+    <div class="sb-item" onclick="showPage('applicants',this)"><div class="sb-pip"></div>Applicants</div>
+    <div class="sb-sec">Config</div>
+    <div class="sb-item" onclick="showPage('apikeys',this)"><div class="sb-pip"></div>API keys</div>
+    <div class="sb-item" onclick="showPage('webhooks',this)"><div class="sb-pip"></div>Webhooks</div>
+    <div class="sb-item" onclick="showPage('team',this)"><div class="sb-pip"></div>Team</div>
+    <div class="sb-item" onclick="showPage('billing',this)"><div class="sb-pip"></div>Billing</div>
+  </nav>
+  <div class="sb-foot">
+    <div class="sb-user">
+      <div class="sb-av">KM</div>
+      <div><div class="sb-uname">Kabelo Mokoena</div><div class="sb-urole">Senior analyst</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-title" id="tb-title">Verifications</div>
+    <div class="tb-right">
+      <div class="live-pill"><div class="live-dot"></div>Live</div>
+      <button class="btn bp" id="new-req-btn" onclick="openNewModal()">+ New request</button>
+    </div>
+  </div>
+
+  <!-- PAGE: VERIFICATIONS -->
+  <div class="page on" id="page-verifications">
+    <div class="kpis">
+      <div class="kpi"><div class="kl">This month</div><div class="kv" id="k-total">47</div><div class="kd">+12 vs last month</div></div>
+      <div class="kpi"><div class="kl">Verified</div><div class="kv g" id="k-ver">31</div><div class="kd">66% approval rate</div></div>
+      <div class="kpi"><div class="kl">Fraud flagged</div><div class="kv r" id="k-flag">8</div><div class="kd">R 2.4M risk avoided</div></div>
+      <div class="kpi"><div class="kl">Awaiting auth</div><div class="kv a" id="k-pend">3</div><div class="kd">Stitch link sent</div></div>
+    </div>
+    <div class="sec-bar">
+      <div class="sec-title">Recent verifications</div>
+      <div class="ftabs">
+        <div class="ftab on" onclick="filt('all',this)">All</div>
+        <div class="ftab" onclick="filt('pending',this)">Pending</div>
+        <div class="ftab" onclick="filt('verified',this)">Verified</div>
+        <div class="ftab" onclick="filt('flagged',this)">Flagged</div>
+      </div>
+    </div>
+    <div class="tw">
+      <table class="vt">
+        <thead><tr>
+          <th>Applicant</th><th>Initiated</th><th>Bank</th>
+          <th>Verified income</th><th>Expenses</th><th>Disposable</th>
+          <th>Score</th><th>Status</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PAGE: REPORTS -->
+  <div class="page" id="page-reports">
+    <div class="page-placeholder">
+      <div class="ph-title">Reports</div>
+      <div class="ph-sub">Monthly verification summaries, fraud statistics, and affordability trend reports will appear here. Export to PDF or CSV for compliance.</div>
+    </div>
+  </div>
+
+  <!-- PAGE: APPLICANTS -->
+  <div class="page" id="page-applicants">
+    <div class="page-placeholder">
+      <div class="ph-title">Applicants</div>
+      <div class="ph-sub">Search and manage all applicants across verification history. View individual profiles, verification records, and decisions.</div>
+    </div>
+  </div>
+
+  <!-- PAGE: API KEYS -->
+  <div class="page" id="page-apikeys">
+    <div class="page-placeholder">
+      <div class="ph-title">API keys</div>
+      <div class="ph-sub">Manage your VerifiCore API credentials. Generate, rotate, and revoke keys. Each key is scoped to specific environments (test / live) and permissions.</div>
+      <div style="margin-top:24px;background:var(--card);border:1px solid var(--border);border-radius:var(--rl2);padding:20px 24px;text-align:left;max-width:480px">
+        <div style="font-size:10px;font-family:var(--fm);color:var(--ink3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Live key</div>
+        <div style="font-family:var(--fm);font-size:12px;color:var(--ink);background:var(--card2);border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;word-break:break-all">fv_live_••••••••••••••••••••••••••••••••</div>
+        <div style="margin-top:8px;font-size:10px;font-family:var(--fm);color:var(--ink3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">Test key</div>
+        <div style="font-family:var(--fm);font-size:12px;color:var(--ink);background:var(--card2);border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px;word-break:break-all">fv_test_••••••••••••••••••••••••••••••••</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: WEBHOOKS -->
+  <div class="page" id="page-webhooks">
+    <div class="page-placeholder">
+      <div class="ph-title">Webhook settings</div>
+      <div class="ph-sub">Configure the endpoint that receives verification results. VerifiCore sends a signed POST to your URL when a report is ready.</div>
+      <div style="margin-top:24px;background:var(--card);border:1px solid var(--border);border-radius:var(--rl2);padding:20px 24px;text-align:left;max-width:480px;width:100%">
+        <div style="font-size:10px;font-family:var(--fm);color:var(--ink3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Webhook endpoint</div>
+        <div style="font-family:var(--fm);font-size:12px;color:var(--ink);background:var(--card2);border:1px solid var(--border2);border-radius:var(--r);padding:9px 12px">https://acme-lenders.co.za/webhooks/verificore</div>
+        <div style="margin-top:14px;font-size:11px;color:var(--ink3)">Last delivery: <span style="color:var(--green);font-family:var(--fm)">200 OK · 84ms</span> — Today 09:18:08</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: TEAM -->
+  <div class="page" id="page-team">
+    <div class="page-placeholder">
+      <div class="ph-title">Team</div>
+      <div class="ph-sub">Invite analysts, managers, and auditors. Set role-based permissions — who can initiate verifications, approve/decline, and export reports.</div>
+    </div>
+  </div>
+
+  <!-- PAGE: BILLING -->
+  <div class="page" id="page-billing">
+    <div class="page-placeholder">
+      <div class="ph-title">Billing</div>
+      <div class="ph-sub">Your current plan and usage. Verifications are billed per check — R 25 per verified report, R 10 per pending request.</div>
+      <div style="margin-top:24px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:480px;width:100%">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl2);padding:16px;text-align:center">
+          <div style="font-size:9px;font-family:var(--fm);color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">This month</div>
+          <div style="font-family:var(--fd);font-style:italic;font-size:22px;color:var(--ink)">47</div>
+          <div style="font-size:10px;color:var(--ink3);margin-top:2px">verifications</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl2);padding:16px;text-align:center">
+          <div style="font-size:9px;font-family:var(--fm);color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Amount due</div>
+          <div style="font-family:var(--fd);font-style:italic;font-size:22px;color:var(--green)">R 1,175</div>
+          <div style="font-size:10px;color:var(--ink3);margin-top:2px">end of month</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl2);padding:16px;text-align:center">
+          <div style="font-size:9px;font-family:var(--fm);color:var(--ink3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Plan</div>
+          <div style="font-family:var(--fd);font-style:italic;font-size:22px;color:var(--ink)">Growth</div>
+          <div style="font-size:10px;color:var(--ink3);margin-top:2px">pay-per-use</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- DETAIL DRAWER -->
+
+<!-- PDF REPORT (hidden on screen, printed to PDF) -->
+<div id="pdf-report"></div>
+
+<div class="dov" id="dov" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="dh">
+    <div id="dh-c" style="flex:1;min-width:0"></div>
+    <div class="dc" onclick="closeDrawer()">✕</div>
+  </div>
+  <div class="db" id="db"></div>
+  <div class="da" id="da"></div>
+</div>
+
+<!-- NEW REQUEST MODAL -->
+<div class="ov" id="new-ov" onclick="if(event.target===this)closeOv('new-ov')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div class="mt">New verification request</div>
+      <div class="ms">Enter applicant details. VerifiCore generates a Stitch-powered auth link — the applicant authenticates on their banking app and the report comes back automatically.</div>
+    </div>
+    <div class="mb">
+      <div class="info-green info-box"><span>→</span><span>Uses Stitch SafeLink. Applicant authenticates directly with their bank — credentials never touch VerifiCore.</span></div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">First name</label><input class="fi" id="f-first" type="text" placeholder="Sipho" autocomplete="off"/></div>
+        <div class="fg"><label class="fl">Last name</label><input class="fi" id="f-last" type="text" placeholder="Dlamini" autocomplete="off"/></div>
+      </div>
+      <div class="fg"><label class="fl">SA ID number</label><input class="fi" id="f-id" type="text" inputmode="numeric" placeholder="8001015009087" maxlength="13" autocomplete="off"/></div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Mobile number</label><input class="fi" id="f-mob" type="tel" placeholder="+27 82 000 0000" autocomplete="off"/></div>
+        <div class="fg"><label class="fl">Email address</label><input class="fi" id="f-email" type="email" placeholder="applicant@email.com" autocomplete="off"/></div>
+      </div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Loan amount</label><input class="fi" id="f-amt" type="text" placeholder="R 50,000" autocomplete="off"/></div>
+        <div class="fg"><label class="fl">Statement period</label>
+          <select class="fi" id="f-period">
+            <option>3 months</option>
+            <option selected>6 months</option>
+            <option>12 months</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Applicant's bank</label>
+        <select class="fi" id="f-bank" onchange="previewBankSelect(this.value)">
+          <option value="">— Select bank —</option>
+          <option value="FNB">FNB</option>
+          <option value="ABSA">ABSA</option>
+          <option value="Standard Bank">Standard Bank</option>
+          <option value="Nedbank">Nedbank</option>
+          <option value="Capitec">Capitec</option>
+          <option value="TymeBank">TymeBank</option>
+        </select>
+        <div id="bank-preview" style="display:none;margin-top:8px;align-items:center;gap:8px;padding:8px 10px;background:var(--gl);border:1px solid rgba(31,138,90,.2);border-radius:var(--r)">
+          <div id="bank-preview-dot" style="width:10px;height:10px;border-radius:50%;flex-shrink:0"></div>
+          <span id="bank-preview-name" style="font-size:11px;color:var(--green);font-weight:500"></span>
+          <span style="font-size:10px;color:var(--ink3);font-family:var(--fm);margin-left:auto">Applicant will be taken directly to this bank&#39;s login</span>
+        </div>
+      </div>
+      <div class="info-blue info-box" style="margin-top:4px;margin-bottom:0"><span>ℹ</span><span>Scopes: <strong>openid accounts transactions balances accountholders offline_access</strong></span></div>
+    </div>
+    <div class="mf">
+      <button class="btn bs" onclick="closeOv('new-ov')">Cancel</button>
+      <button class="btn bp" onclick="generateStitchLink()">Generate Stitch link →</button>
+    </div>
+  </div>
+</div>
+
+<!-- STITCH LINK MODAL -->
+<div class="ov" id="sl-ov" onclick="if(event.target===this)closeOv('sl-ov')">
+  <div class="sl-modal" onclick="event.stopPropagation()">
+    <div class="sl-header">
+      <div class="sl-logo"><div class="sl-mark">Vc</div><div class="sl-name">VerifiCore</div></div>
+      <div class="sl-badge" id="sl-badge">Generating…</div>
+    </div>
+    <div class="sl-body">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 12px;background:var(--gl);border:1px solid rgba(31,138,90,.2);border-radius:var(--r)">
+        <div id="sl-bank-dot" style="width:10px;height:10px;border-radius:50%;background:#888;flex-shrink:0"></div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--green)" id="sl-bank-label">—</div>
+          <div style="font-size:9px;font-family:var(--fm);color:var(--ink3)">Applicant directed straight to this bank&#39;s login — no selection screen</div>
+        </div>
+      </div>
+      <div class="sl-title">Stitch auth link ready</div>
+      <div class="sl-sub">Sent via SMS and email. Applicant taps the link, authenticates on their banking app via Stitch, and the report lands here automatically.</div>
+      <div class="url-box">
+        <span class="hl">https://secure.stitch.money/connect/authorize?</span>client_id=<span class="hl" id="sl-cid">…</span>&amp;scope=openid%20accounts%20transactions%20balances%20accountholders%20offline_access&amp;response_type=code&amp;redirect_uri=<span class="hl">https%3A%2F%2Fverificore.co.za%2Fcallback</span>&amp;state=<span class="hl" id="sl-state">…</span>&amp;nonce=<span class="hl" id="sl-nonce">…</span>&amp;code_challenge=<span class="hl" id="sl-challenge">…</span>&amp;code_challenge_method=S256
+        <br/><span class="copy-btn" onclick="copyURL()">Copy full URL</span>
+      </div>
+      <div class="sl-step"><div class="sl-step-num active" id="sn1">1</div><div class="sl-step-text"><b>PKCE + state generated (backend)</b><small>code_verifier · code_challenge · state · nonce</small></div></div>
+      <div class="sl-step"><div class="sl-step-num" id="sn2">2</div><div class="sl-step-text"><b>Stitch auth URL built</b><small>https://secure.stitch.money/connect/authorize</small></div></div>
+      <div class="sl-step"><div class="sl-step-num" id="sn3">3</div><div class="sl-step-text"><b>SMS + email dispatched to applicant</b><small>Short link · expires 24h · single-use</small></div></div>
+      <div class="sl-step"><div class="sl-step-num" id="sn4">4</div><div class="sl-step-text"><b>Applicant authenticates on banking app</b><small>Stitch-hosted UI → bank login → 2FA</small></div></div>
+      <div class="sl-step"><div class="sl-step-num" id="sn5">5</div><div class="sl-step-text"><b>Auth code → user token</b><small>Backend exchanges code at /connect/token</small></div></div>
+      <div class="sl-step"><div class="sl-step-num" id="sn6">6</div><div class="sl-step-text"><b>GraphQL query + report delivered</b><small>Transactions pulled · dashboard updates live</small></div></div>
+    </div>
+    <div class="sl-foot">
+      <button class="btn bs" style="flex:1" onclick="closeOv('sl-ov')">Close</button>
+      <button class="btn bp" onclick="simulateComplete()">Simulate applicant completing →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-area"><div class="toast" id="toast"></div></div>
+
+<script>
+const fmt = n => n > 0 ? 'R ' + n.toLocaleString('en-ZA') : '—';
+let curFilter = 'all', curRow = null, pendingId = null;
+
+let DATA = [
+  { id:'VRF-0051', name:'Sipho Dlamini', ini:'SD', color:'#2d6a4f',
+    when:'Today 09:14', bank:'Capitec', income:18200, exp:11400, disp:6800,
+    score:78, risk:'l', status:'verified', loan:'R 40,000', period:'6 months',
+    cats:[{n:'Housing',a:4200},{n:'Food',a:2800},{n:'Transport',a:1600},{n:'Utilities',a:1200},{n:'Other',a:1600}],
+    flags:[{s:'ok',t:'Salary verified',d:'R 18,200 confirmed — consistent 6 months via Stitch/Capitec'},
+           {s:'ok',t:'No fraud signals',d:'All transactions matched. Balance continuity confirmed.'},
+           {s:'warn',t:'Moderate debt load',d:'43% of income committed to fixed expenses'}],
+    audit:['09:14:02 — PKCE pair generated (backend)','09:14:02 — Auth URL built → SMS + email sent',
+           '09:17:44 — Applicant opened Stitch link','09:17:58 — Capitec login completed',
+           '09:18:03 — 2FA approved on banking app','09:18:04 — Auth code → user token exchanged',
+           '09:18:06 — GraphQL: transactions (6 months)','09:18:08 — Analysis complete · LOW risk',
+           '09:18:08 — Report delivered to dashboard'] },
+  { id:'VRF-0052', name:'Jane Smith', ini:'JS', color:'#6b2d2d',
+    when:'Today 08:52', bank:'ABSA', income:22000, exp:19800, disp:2200,
+    score:31, risk:'h', status:'flagged', loan:'R 80,000', period:'3 months',
+    cats:[{n:'Housing',a:8500},{n:'Food',a:3200},{n:'Transport',a:2800},{n:'Debt',a:4200},{n:'Other',a:1100}],
+    flags:[{s:'bad',t:'Salary mismatch detected',d:'Claimed R 65,000 — bank data confirms R 22,000'},
+           {s:'bad',t:'Unmatched credit transaction',d:'R 15,000 deposit on PDF has no bank record'},
+           {s:'warn',t:'Very low disposable',d:'Only R 2,200 free per month after verified expenses'}],
+    audit:['08:52:11 — PKCE pair generated','08:52:12 — Stitch auth URL built + dispatched',
+           '09:03:54 — Applicant opened link','09:04:09 — ABSA login completed',
+           '09:04:12 — 2FA approved','09:04:14 — Token exchanged',
+           '09:04:16 — Transactions pulled','09:04:18 — FRAUD SIGNALS DETECTED',
+           '09:04:18 — Report flagged · manual review required'] },
+  { id:'VRF-0053', name:'Thabo Nkosi', ini:'TN', color:'#1a3d6b',
+    when:'Yesterday 15:30', bank:'FNB', income:35000, exp:22000, disp:13000,
+    score:87, risk:'l', status:'verified', loan:'R 120,000', period:'12 months',
+    cats:[{n:'Housing',a:9500},{n:'Food',a:4200},{n:'Transport',a:3300},{n:'Insurance',a:2800},{n:'Other',a:2200}],
+    flags:[{s:'ok',t:'Salary verified',d:'R 35,000 — consistent 12 months'},
+           {s:'ok',t:'Strong affordability',d:'R 13,000 disposable well covers proposed instalment'}],
+    audit:['15:30:05 — PKCE pair + auth URL generated','15:30:06 — SMS + email dispatched',
+           '15:44:17 — Applicant authenticated (FNB banking app)','15:44:19 — 2FA via FNB app',
+           '15:44:21 — Token exchanged · 12mo transactions pulled','15:44:24 — LOW risk · report delivered'] },
+  { id:'VRF-0054', name:'Priya Naidoo', ini:'PN', color:'#4a235a',
+    when:'Yesterday 11:20', bank:'Nedbank', income:0, exp:0, disp:0,
+    score:0, risk:'', status:'pending', loan:'R 25,000', period:'6 months',
+    cats:[], flags:[{s:'warn',t:'Awaiting applicant',d:'Stitch auth link sent · applicant has not yet authenticated'}],
+    audit:['11:20:33 — PKCE pair generated (backend)',
+           '11:20:33 — Stitch auth URL: https://secure.stitch.money/connect/authorize?…',
+           '11:20:34 — SMS + email sent to applicant',
+           '— Awaiting applicant to authenticate via Stitch'] },
+];
+
+/* ── PAGE SWITCHING ── */
+const PAGE_TITLES = {
+  verifications:'Verifications', reports:'Reports', applicants:'Applicants',
+  apikeys:'API keys', webhooks:'Webhooks', team:'Team', billing:'Billing'
+};
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('on'));
+  document.getElementById('page-' + name).classList.add('on');
+  if (el) el.classList.add('on');
+  document.getElementById('tb-title').textContent = PAGE_TITLES[name] || name;
+  const btn = document.getElementById('new-req-btn');
+  btn.style.display = name === 'verifications' ? '' : 'none';
+  closeDrawer();
+}
+
+/* ── FILTER TABS ── */
+function filt(f, el) {
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+  curFilter = f;
+  renderTable(f);
+}
+
+/* ── TABLE ── */
+function scoreChip(d) {
+  if (!d.score) return '—';
+  const cls = d.risk === 'l' ? 'sc-l' : d.risk === 'h' ? 'sc-h' : 'sc-m';
+  return `<span class="sc ${cls}">${d.score}</span>`;
+}
+function renderTable(f) {
+  const rows = f === 'all' ? DATA : DATA.filter(d => d.status === f);
+  const tb = document.getElementById('tbody');
+  if (!rows.length) {
+    tb.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--ink3);font-family:var(--fd);font-style:italic">No ${f} verifications</td></tr>`;
+    return;
+  }
+  tb.innerHTML = rows.map(d => `
+    <tr onclick="openDrawer('${d.id}')" id="row-${d.id}">
+      <td><div class="ai">
+        <div class="av" style="background:${d.color}22;color:${d.color}">${d.ini}</div>
+        <div><div class="an">${d.name}</div><div class="aid">${d.id}</div></div>
+      </div></td>
+      <td class="mono">${d.when}</td>
+      <td class="mono">${d.bank}</td>
+      <td class="mono" style="color:${d.income > 0 ? 'var(--green)' : 'var(--ink3)'}">${fmt(d.income)}</td>
+      <td class="mono">${fmt(d.exp)}</td>
+      <td class="mono" style="color:${d.disp > 5000 ? 'var(--green)' : d.disp > 0 ? 'var(--amber)' : 'var(--ink3)'}">${fmt(d.disp)}</td>
+      <td>${scoreChip(d)}</td>
+      <td><span class="pill ${d.status === 'pending' ? 'pp' : d.status === 'verified' ? 'pv' : d.status === 'flagged' ? 'pf' : 'pw'}">
+        ${d.status === 'pending' ? 'awaiting auth' : d.status}
+      </span></td>
+    </tr>`).join('');
+}
+
+/* ── DRAWER ── */
+function openDrawer(id) {
+  const d = DATA.find(x => x.id === id);
+  if (!d) return;
+  curRow = id;
+  document.querySelectorAll('.vt tbody tr').forEach(r => r.classList.remove('sel'));
+  const re = document.getElementById('row-' + id);
+  if (re) re.classList.add('sel');
+
+  const rc = d.risk === 'l' ? 'l' : d.risk === 'h' ? 'h' : 'm';
+  const rl = d.risk === 'l' ? 'LOW' : d.risk === 'h' ? 'HIGH' : d.risk === 'm' ? 'MED' : '';
+
+  document.getElementById('dh-c').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="av" style="background:${d.color}22;color:${d.color};width:36px;height:36px;font-size:11px">${d.ini}</div>
+      <div>
+        <div style="font-family:var(--fd);font-style:italic;font-size:16px;color:var(--ink)">${d.name}</div>
+        <div style="font-size:9px;font-family:var(--fm);color:var(--ink3)">${d.id} · ${d.loan} · ${d.period} · ${d.bank}</div>
+      </div>
+    </div>`;
+
+  const emax = d.cats.length ? Math.max(...d.cats.map(c => c.a)) : 1;
+  const ebars = d.cats.map(c => `
+    <div class="ebr">
+      <div class="ebl">${c.n}</div>
+      <div class="ebt"><div class="ebf" style="width:${Math.round(c.a / emax * 100)}%"></div></div>
+      <div class="eba">${fmt(c.a)}</div>
+    </div>`).join('');
+
+  const flagsHtml = d.flags.map(f => `
+    <div class="fr ${f.s}">
+      <div class="fri">${f.s === 'ok' ? '✓' : f.s === 'bad' ? '⚠' : '!'}</div>
+      <div><div class="frt">${f.t}</div><div class="frd">${f.d}</div></div>
+    </div>`).join('');
+
+  const auditHtml = d.audit.map(l => {
+    const p = l.split(' — ');
+    return `<div class="aline"><span class="at">${p[0]}</span><span class="ae">${p[1] || ''}</span></div>`;
+  }).join('');
+
+  document.getElementById('db').innerHTML = d.score > 0 ? `
+    <div class="sd">
+      <div class="snb ${rc}">${d.score}</div>
+      <div>
+        <div class="srl ${rc}">${rl} RISK</div>
+        <div style="font-size:11px;color:var(--ink3);margin-bottom:8px">${d.status === 'flagged' ? 'Manual review required' : 'Verification complete'}</div>
+        <span class="pill ${d.status === 'verified' ? 'pv' : 'pf'}">${d.status}</span>
+      </div>
+    </div>
+    <div class="mg">
+      <div class="mc"><div class="mlb">Verified income</div><div class="mv g">${fmt(d.income)}/mo</div></div>
+      <div class="mc"><div class="mlb">Total expenses</div><div class="mv">${fmt(d.exp)}/mo</div></div>
+      <div class="mc"><div class="mlb">Disposable</div><div class="mv ${d.disp > 5000 ? 'g' : d.disp < 3000 ? 'r' : ''}">${fmt(d.disp)}/mo</div></div>
+      <div class="mc"><div class="mlb">Expense ratio</div><div class="mv">${d.income > 0 ? Math.round(d.exp / d.income * 100) + '%' : '—'}</div></div>
+    </div>
+    ${d.cats.length ? `<div class="dsl">Expense breakdown</div>${ebars}` : ''}
+    <div class="dsl">Verification signals</div>${flagsHtml}
+    <div class="dsl">Audit trail</div>
+    <div class="audit">${auditHtml}</div>
+  ` : `
+    <div style="background:var(--al);border:1px solid rgba(107,64,9,.18);border-radius:var(--r);padding:14px;font-size:12px;color:var(--amber);margin-bottom:14px;line-height:1.6">
+      Stitch auth link sent. Awaiting applicant to authenticate on their banking app. This dashboard updates automatically on completion.
+    </div>
+    <div class="dsl">Audit trail</div>
+    <div class="audit">${auditHtml}</div>
+  `;
+
+  document.getElementById('da').innerHTML = d.score > 0 ? `
+    <button class="btn bg" style="flex:1" onclick="toast('Decision recorded: Approved ✓')">Approve</button>
+    <button class="btn bd" onclick="toast('Decision recorded: Declined')">Decline</button>
+    <button class="btn bs bsm" onclick="exportJSON('${d.id}')">JSON</button>
+    <button class="btn bg bsm" onclick="downloadPDF('${d.id}')">&#8595; PDF</button>
+  ` : `
+    <button class="btn bs" style="flex:1" onclick="toast('Link resent via SMS + email')">Resend link</button>
+    <button class="btn bd bsm" onclick="toast('Request cancelled')">Cancel</button>
+  `;
+
+  document.getElementById('dov').classList.add('on');
+  document.getElementById('drawer').classList.add('on');
+}
+
+function closeDrawer() {
+  document.getElementById('dov').classList.remove('on');
+  document.getElementById('drawer').classList.remove('on');
+  document.querySelectorAll('.vt tbody tr').forEach(r => r.classList.remove('sel'));
+  curRow = null;
+}
+
+/* ── MODALS ── */
+function openNewModal() { document.getElementById('new-ov').classList.add('on'); }
+function closeOv(id) { document.getElementById(id).classList.remove('on'); }
+
+/* ── PKCE + STITCH LINK ── */
+function b64url(arr) {
+  return btoa(String.fromCharCode(...arr)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+const BANK_COLORS = {
+  'FNB':'#e05c1a','ABSA':'#d4122a','Standard Bank':'#0033a0',
+  'Nedbank':'#007b40','Capitec':'#0059a7','TymeBank':'#e91c8b'
+};
+const BANK_ABBR = {
+  'FNB':'FNB','ABSA':'ABSA','Standard Bank':'STD',
+  'Nedbank':'NED','Capitec':'CAP','TymeBank':'TYM'
+};
+
+function previewBankSelect(val) {
+  const preview = document.getElementById('bank-preview');
+  if (!val) { preview.style.display = 'none'; return; }
+  document.getElementById('bank-preview-dot').style.background = BANK_COLORS[val] || '#888';
+  document.getElementById('bank-preview-name').textContent = val;
+  preview.style.display = 'flex';
+}
+
+async function generateStitchLink() {
+  const first  = document.getElementById('f-first').value.trim() || 'New';
+  const last   = document.getElementById('f-last').value.trim()  || 'Applicant';
+  const mob    = document.getElementById('f-mob').value.trim();
+  const period = document.getElementById('f-period').value;
+  const amt    = document.getElementById('f-amt').value.trim() || 'R 0';
+  const bank   = document.getElementById('f-bank').value;
+
+  if (!bank) {
+    document.getElementById('f-bank').style.borderColor = 'var(--red)';
+    document.getElementById('f-bank').focus();
+    toast('Please select the applicant\'s bank');
+    return;
+  }
+  document.getElementById('f-bank').style.borderColor = '';
+  closeOv('new-ov');
+
+  // Real PKCE generation
+  const verifierBytes = crypto.getRandomValues(new Uint8Array(32));
+  const verifier = b64url(verifierBytes);
+  const hashBuf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  const challenge = b64url(new Uint8Array(hashBuf));
+  const state     = b64url(crypto.getRandomValues(new Uint8Array(32)));
+  const nonce     = b64url(crypto.getRandomValues(new Uint8Array(32)));
+  const clientId  = 'test-' + Math.random().toString(36).slice(2, 18);
+
+  // Populate URL preview
+  document.getElementById('sl-cid').textContent       = clientId;
+  document.getElementById('sl-state').textContent     = state.slice(0, 14) + '…';
+  document.getElementById('sl-nonce').textContent     = nonce.slice(0, 14) + '…';
+  document.getElementById('sl-challenge').textContent = challenge.slice(0, 14) + '…';
+  document.getElementById('sl-badge').textContent     = 'Link ready';
+
+  // Reset step indicators
+  for (let i = 1; i <= 6; i++) {
+    const el = document.getElementById('sn' + i);
+    el.className = 'sl-step-num';
+    el.textContent = i;
+  }
+  document.getElementById('sn1').className = 'sl-step-num active';
+  document.getElementById('sl-ov').classList.add('on');
+
+  // Animate first 3 steps (FSP / backend side)
+  for (let i = 1; i <= 3; i++) {
+    await sleep(600);
+    const el = document.getElementById('sn' + i);
+    el.className = 'sl-step-num done';
+    el.textContent = '✓';
+    if (i < 3) {
+      document.getElementById('sn' + (i + 1)).className = 'sl-step-num active';
+    }
+  }
+  document.getElementById('sl-badge').textContent = 'Waiting for applicant';
+
+  // Add pending row
+  const nid = 'VRF-' + String(Math.floor(Math.random() * 900 + 100));
+  const color = '#' + Math.floor(Math.random() * 0x888888 + 0x333333).toString(16).padStart(6, '0');
+  const now   = new Date().toLocaleTimeString('en-ZA', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  // Update Stitch link modal with selected bank
+  document.getElementById('sl-bank-dot').style.background = BANK_COLORS[bank] || '#888';
+  document.getElementById('sl-bank-label').textContent = bank + ' — pre-selected by FSP agent';
+
+  pendingId = nid;
+  DATA.unshift({
+    id:nid, name:first + ' ' + last,
+    ini: (first[0] || 'N').toUpperCase() + (last[0] || 'A').toUpperCase(),
+    color, when:'Just now', bank, income:0, exp:0, disp:0,
+    score:0, risk:'', status:'pending', loan:amt, period, cats:[],
+    flags:[{ s:'warn', t:'Awaiting authentication', d:'Stitch auth link sent · applicant directed to ' + bank + ' login' }],
+    audit:[
+      now + ' — PKCE code_verifier + code_challenge generated (backend)',
+      now + ' — Bank pre-selected by FSP: ' + bank,
+      now + ' — state: ' + state.slice(0, 12) + '… · nonce: ' + nonce.slice(0, 12) + '…',
+      now + ' — Auth URL: https://secure.stitch.money/connect/authorize?… (bank=' + bank + ')',
+      now + ' — SMS dispatched to ' + (mob || 'applicant') + ' — link opens directly to ' + bank + ' login',
+      now + ' — Email dispatched',
+      '— Awaiting applicant to authenticate at ' + bank
+    ]
+  });
+  renderTable(curFilter);
+  updateKPIs();
+}
+
+function simulateComplete() {
+  closeOv('sl-ov');
+  if (!pendingId) { toast('No pending verification to simulate'); return; }
+  toast('Applicant opened link · authenticating on banking app…');
+
+  // Animate steps 4–6 sequentially
+  let step = 4;
+  const tick = setInterval(() => {
+    if (step > 6) { clearInterval(tick); return; }
+    const el = document.getElementById('sn' + step);
+    if (el) { el.className = 'sl-step-num done'; el.textContent = '✓'; }
+    step++;
+  }, 1100);
+
+  setTimeout(() => {
+    const d = DATA.find(x => x.id === pendingId);
+    if (!d) return;
+    const now = new Date().toLocaleTimeString('en-ZA', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    const resolvedBank = d.bank && d.bank !== '—' ? d.bank : 'FNB';
+    Object.assign(d, {
+      status:'verified', bank:resolvedBank, income:28500, exp:17200, disp:11300,
+      score:74, risk:'l',
+      cats:[{n:'Housing',a:7800},{n:'Food',a:3600},{n:'Transport',a:2800},{n:'Utilities',a:1500},{n:'Other',a:1500}],
+      flags:[
+        {s:'ok', t:'Salary verified', d:'R 28,500 confirmed via Stitch/FNB GraphQL'},
+        {s:'ok', t:'No fraud signals', d:'All transactions matched · balance continuity confirmed'}
+      ]
+    });
+    d.audit.push(
+      now + ' — Applicant opened Stitch link',
+      now + ' — ' + resolvedBank + ' login + 2FA completed on banking app',
+      now + ' — Auth code received at redirect_uri',
+      now + ' — POST /connect/token → user token issued',
+      now + ' — GraphQL: user { bankAccounts { transactions } } via ' + resolvedBank,
+      now + ' — Score 74 · LOW risk · report delivered'
+    );
+    renderTable(curFilter);
+    updateKPIs();
+    const re = document.getElementById('row-' + pendingId);
+    if (re) { re.classList.add('row-new'); setTimeout(() => re.classList.remove('row-new'), 2500); }
+    toast('Verified — ' + d.name + ' · score 74 · LOW risk');
+    if (curRow === pendingId) openDrawer(pendingId);
+    pendingId = null;
+  }, 4500);
+}
+
+function updateKPIs() {
+  document.getElementById('k-total').textContent = DATA.length + 42;
+  document.getElementById('k-ver').textContent   = DATA.filter(d => d.status === 'verified').length + 28;
+  document.getElementById('k-flag').textContent  = DATA.filter(d => d.status === 'flagged').length + 6;
+  document.getElementById('k-pend').textContent  = DATA.filter(d => d.status === 'pending').length;
+  document.getElementById('sb-count').textContent = DATA.length;
+}
+
+function copyURL() {
+  const text = document.getElementById('sl-ov').querySelector('.url-box').textContent.replace('Copy full URL', '').trim();
+  if (navigator.clipboard) navigator.clipboard.writeText(text);
+  toast('Stitch auth URL copied to clipboard');
+}
+
+function exportJSON(id) {
+  const d = DATA.find(x => x.id === id);
+  if (!d) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(d, null, 2)], { type:'application/json' }));
+  a.download = 'verificore-' + id + '.json';
+  a.click();
+  toast('Report exported as JSON');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('on'), 3000);
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Init
+renderTable('all');
+
+// ── PDF GENERATION ────────────────────────────────────────────────────────────
+function fmt2(n) { return n > 0 ? 'R ' + n.toLocaleString('en-ZA', {minimumFractionDigits:2, maximumFractionDigits:2}) : '—'; }
+
+function buildPDFReport(d) {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-ZA', { year:'numeric', month:'long', day:'numeric' });
+  const timeStr = now.toLocaleTimeString('en-ZA', { hour:'2-digit', minute:'2-digit' });
+  const rc = d.risk === 'l' ? 'low' : d.risk === 'h' ? 'high' : 'med';
+  const rLabel = d.risk === 'l' ? 'LOW RISK' : d.risk === 'h' ? 'HIGH RISK' : 'MEDIUM RISK';
+  const totalExp = d.exp;
+  const expRatio = d.income > 0 ? Math.round(d.exp / d.income * 100) : 0;
+  const emax = d.cats.length ? Math.max(...d.cats.map(c => c.a)) : 1;
+
+  const flagsHtml = d.flags.map(f => `
+    <div class="pdf-flag ${f.s}">
+      <div class="pdf-flag-ico">${f.s === 'ok' ? '✓' : f.s === 'bad' ? '⚠' : '!'}</div>
+      <div>
+        <div class="pdf-flag-title">${f.t}</div>
+        <div class="pdf-flag-desc">${f.d}</div>
+      </div>
+    </div>`).join('');
+
+  const auditHtml = d.audit.map(l => {
+    const p = l.split(' — ');
+    return `<div class="pdf-audit-line"><span class="pdf-audit-time">${p[0]}</span><span class="pdf-audit-event">${p[1] || ''}</span></div>`;
+  }).join('');
+
+  const expBarsHtml = d.cats.map(c => `
+    <div class="pdf-expense-row">
+      <div class="pdf-exp-label">${c.n}</div>
+      <div class="pdf-exp-track"><div class="pdf-exp-fill" style="width:${Math.round(c.a/emax*100)}%"></div></div>
+      <div class="pdf-exp-amount">${fmt2(c.a)}</div>
+    </div>`).join('');
+
+  return `
+    <!-- PAGE 1 -->
+    <div class="pdf-header">
+      <div class="pdf-logo">
+        <div class="pdf-logo-mark">Vc</div>
+        <div class="pdf-logo-name">VerifiCore</div>
+      </div>
+      <div class="pdf-header-right">
+        <div class="pdf-report-title">Affordability Verification Report</div>
+        <div class="pdf-report-meta">${d.id} · Generated ${dateStr} at ${timeStr}</div>
+        <div class="pdf-report-meta">Acme Micro Lenders · Stitch open banking</div>
+      </div>
+    </div>
+
+    <div class="pdf-applicant-card">
+      <div class="pdf-av" style="background:${d.color}">${d.ini}</div>
+      <div>
+        <div class="pdf-app-name">${d.name}</div>
+        <div class="pdf-app-meta">${d.id} · Loan: ${d.loan} · Period: ${d.period} · Bank: ${d.bank}</div>
+        <div class="pdf-app-meta" style="margin-top:3pt">Initiated: ${d.when}</div>
+      </div>
+      <div class="pdf-issued-by">
+        <div>Issued by</div>
+        <div style="color:#111;font-weight:600">Acme Micro Lenders</div>
+        <div>${dateStr}</div>
+      </div>
+    </div>
+
+    <div class="pdf-score-band ${rc}">
+      <div class="pdf-score-num ${rc}">${d.score}</div>
+      <div class="pdf-score-meta">
+        <div class="pdf-score-risk ${rc}">${rLabel}</div>
+        <div class="pdf-score-sub">Score out of 100 · based on verified bank data via Stitch API</div>
+        <div class="pdf-score-sub" style="margin-top:4pt">${d.status === 'flagged' ? '⚠ Manual review required — fraud signals detected' : '✓ Verification complete — no fraud signals detected'}</div>
+      </div>
+    </div>
+
+    <div class="pdf-section-title">Income &amp; affordability</div>
+    <div class="pdf-metrics">
+      <div class="pdf-metric">
+        <div class="pdf-metric-label">Verified income</div>
+        <div class="pdf-metric-value green">${fmt2(d.income)}</div>
+      </div>
+      <div class="pdf-metric">
+        <div class="pdf-metric-label">Total expenses</div>
+        <div class="pdf-metric-value">${fmt2(d.exp)}</div>
+      </div>
+      <div class="pdf-metric">
+        <div class="pdf-metric-label">Disposable income</div>
+        <div class="pdf-metric-value ${d.disp > 5000 ? 'green' : d.disp < 3000 ? 'red' : ''}">${fmt2(d.disp)}</div>
+      </div>
+      <div class="pdf-metric">
+        <div class="pdf-metric-label">Expense ratio</div>
+        <div class="pdf-metric-value">${expRatio}%</div>
+      </div>
+    </div>
+
+    ${d.cats.length > 0 ? `
+    <div class="pdf-section-title">Expense breakdown</div>
+    ${expBarsHtml}
+    ` : ''}
+
+    <div class="pdf-section-title">Verification signals</div>
+    ${flagsHtml}
+
+    <!-- PAGE 2 -->
+    <div class="pdf-page-break"></div>
+
+    <div class="pdf-header">
+      <div class="pdf-logo">
+        <div class="pdf-logo-mark">Vc</div>
+        <div class="pdf-logo-name">VerifiCore</div>
+      </div>
+      <div class="pdf-header-right">
+        <div class="pdf-report-title">Affordability Verification Report</div>
+        <div class="pdf-report-meta">${d.id} · ${d.name} · Page 2</div>
+      </div>
+    </div>
+
+    <div class="pdf-section-title">Transaction summary</div>
+    <table class="pdf-table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Value</th>
+          <th>Source</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Monthly income</td>
+          <td class="mono green">${fmt2(d.income)}</td>
+          <td class="mono">${d.bank} via Stitch</td>
+          <td class="mono green">Verified</td>
+        </tr>
+        <tr>
+          <td>Monthly expenses</td>
+          <td class="mono">${fmt2(d.exp)}</td>
+          <td class="mono">${d.bank} via Stitch</td>
+          <td class="mono green">Verified</td>
+        </tr>
+        <tr>
+          <td>Disposable income</td>
+          <td class="mono ${d.disp > 5000 ? 'green' : 'red'}">${fmt2(d.disp)}</td>
+          <td class="mono">Calculated</td>
+          <td class="mono ${d.disp > 0 ? 'green' : 'red'}">${d.disp > 0 ? 'Positive' : 'Negative'}</td>
+        </tr>
+        <tr>
+          <td>Expense-to-income ratio</td>
+          <td class="mono">${expRatio}%</td>
+          <td class="mono">Calculated</td>
+          <td class="mono ${expRatio < 70 ? 'green' : 'red'}">${expRatio < 50 ? 'Healthy' : expRatio < 70 ? 'Moderate' : 'High'}</td>
+        </tr>
+        <tr>
+          <td>Statement period</td>
+          <td class="mono">${d.period}</td>
+          <td class="mono">Stitch OAuth</td>
+          <td class="mono green">Authenticated</td>
+        </tr>
+        <tr>
+          <td>Fraud signals</td>
+          <td class="mono ${d.flags.filter(f=>f.s==='bad').length > 0 ? 'red' : 'green'}">${d.flags.filter(f=>f.s==='bad').length}</td>
+          <td class="mono">Comparison engine</td>
+          <td class="mono ${d.flags.filter(f=>f.s==='bad').length > 0 ? 'red' : 'green'}">${d.flags.filter(f=>f.s==='bad').length > 0 ? 'Review required' : 'None detected'}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pdf-section-title">Audit trail</div>
+    <div class="pdf-audit">
+      ${auditHtml}
+    </div>
+
+    <div class="pdf-disclaimer">
+      This report was generated by VerifiCore using verified financial data sourced via Stitch open banking (stitch.money).
+      Data access was authorised by the applicant via OAuth 2.0 + PKCE. This report is confidential and intended solely
+      for the use of Acme Micro Lenders for the purpose of assessing the above applicant's loan application.
+      Raw transaction data has been or will be deleted in accordance with POPIA data retention requirements.
+      VerifiCore Ref: ${d.id} · Report generated: ${dateStr} ${timeStr} SAST
+    </div>
+
+    <div class="pdf-footer">
+      <span>VerifiCore · verificore.co.za</span>
+      <span>${d.id}</span>
+      <span>Stitch open banking · POPIA compliant</span>
+      <span>${dateStr}</span>
+    </div>
+  `;
+}
+
+function downloadPDF(id) {
+  const d = DATA.find(x => x.id === id);
+  if (!d || d.status === 'pending') { toast('Report only available for verified applications'); return; }
+  
+  const container = document.getElementById('pdf-report');
+  container.innerHTML = buildPDFReport(d);
+  
+  // Set document title for the PDF filename
+  const originalTitle = document.title;
+  document.title = 'VerifiCore-' + d.id + '-' + d.name.replace(/\s+/g, '-');
+  
+  // Small delay to ensure DOM is painted, then print
+  setTimeout(() => {
+    window.print();
+    document.title = originalTitle;
+    // Clear after printing
+    setTimeout(() => { container.innerHTML = ''; }, 1000);
+  }, 120);
+}
+
+</script>
+</body>
+</html>
