@@ -1,10 +1,9 @@
 {
   "version": 2,
-  "name": "verificore-sa",
+  "builds": [
+    { "src": "*.html", "use": "@vercel/static" }
+  ],
   "routes": [
-    { "handle": "filesystem" },
-    { "src": "/auth/(.*)", "dest": "/auth/index.html" },
-    { "src": "/fsp/(.*)", "dest": "/fsp/index.html" },
-    { "src": "/", "dest": "/fsp/index.html" }
+    { "src": "/", "dest": "/index.html" }
   ]
 }
